@@ -1,0 +1,295 @@
+1. Docker -
+
+    * Docker helps developers to BUILD, RUN, DEPLOY and SHARE any application without tedious 
+      environment setup
+
+    * It packages everything as a single unit into one container that can run on any system having Docker
+      installed.
+
+    * It fixes the famous problem - "IT WORKS ON MY MACHINE" , since docker packages everything as a 
+      container
+
+2. Containerization -
+
+    * Packaging your application and everything it needs to run in neat and isolated environment is called
+      a container
+    
+    * Imagine you want to run multiple Java applications, each with different Java versions and 
+      dependencies. Using Virtual Machines (VMs) is like creating separate computers for each app. 
+      Each VM includes its own full operating system, which takes up a lot of resources (RAM, CPU,
+      storage) and takes time to start.
+    
+    * On the other hand Containers are light-weighted mini environment which runs on the same OS Kernel.
+      They share the host OS but are isolated.  
+      
+    * VM = Full system per app (heavyweight)
+
+    * Container = Just enough environment for the app (lightweight)
+
+3. Installing Docker on Linux -
+
+    # Add Docker's official GPG key:
+    sudo apt-get update
+    sudo apt-get install ca-certificates curl
+    sudo install -m 0755 -d /etc/apt/keyrings
+    sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+    sudo chmod a+r /etc/apt/keyrings/docker.asc
+
+    # Add the repository to Apt sources:
+    echo \
+    "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
+    $(. /etc/os-release && echo "${UBUNTU_CODENAME:-$VERSION_CODENAME}") stable" | \
+    sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+    sudo apt-get update
+
+4. Docker Images -
+
+    * Image is like a Class in Java - it is the Blueprint.
+
+    * It contains everything required to run the application i.e host OS, JDK, JAR etc
+
+    * You create a Docker image from a Dockerfile using the docker build command.
+        
+        # Build a Docker image from a Dockerfile in the current directory
+        # -t means 'tag', which names your image
+
+        # Format:
+        docker build -t <image_name>:<tag> <build_context>
+
+        # Example:
+        docker build -t springboot-app:latest .
+
+        <image_name> is the name you want to give your image.
+
+        <tag> is optional (default is latest).
+
+        . means “build context is current directory” (where Dockerfile is located).
+
+    * Commands -
+
+        docker pull <image_name>:<tag>            # Pull image from DockerHub
+        docker images                             # List all images
+        docker rmi <image_name>                   # Remove image
+
+5. Docker Containers -
+
+    * A container is an Object created from a Class. It is a running instance of your Docker Image
+
+    * Commands -
+
+        docker run <image>                        # Run container
+        docker run -d -p 8080:8080 <image>        # Run in detached mode with port mapping
+        docker ps                                 # List running containers
+        docker ps -a                              # List all containers
+        docker stop <container_id>                # Stop container
+        docker start <container_id>               # Start stopped container
+        docker restart <container_id>             # Restart container
+        docker rm <container_id>                  # Remove container
+
+6. Docker Volumes -
+
+    * Volumes are external Hard-drives for your containers
+
+    * When containers stops all the data associated with the container is lost, to persist data even after
+      restart Volumes are used
+    
+    * Volume is stored on the Host machine and remains intact event when the container is restarted 
+      or removed
+
+    * Volumes are mounted i.e attaching Volume from Host machine into the docker container file system
+
+    * Commands -
+
+        docker volume create <volume_name>        # Create a volume
+        docker volume ls                          # List all volumes
+        docker volume inspect <volume_name>       # Inspect volume
+        docker volume rm <volume_name>            # Remove volume
+    
+    * Mount in a Container -
+
+        docker run -v <volume_name>:<container_path> <image>
+    
+    * Example -
+
+        Real Example using MySQL:
+
+        docker volume create mysql-data
+
+        docker run -d \
+        --name mysqlC \
+        -e MYSQL_ROOT_PASSWORD=pass123 \
+        -p 3307:3306 \
+        -v mysql-data:/var/lib/mysql \
+        mysql
+
+        In this example:
+
+            * mysql-data is the Docker volume.
+
+            * /var/lib/mysql is the default data directory used by MySQL where MySQL stores its data inside 
+              the container.
+
+            * -v mysql-data:/var/lib/mysql mounts the volume into the container.
+
+            * Now even if you stop or delete the mysqlC container, the data will be safe in the mysql-data 
+              volume and can be reused when you start a new container.
+    
+7. Docker Networks -
+
+    * In real-world scenarios, we often have multiple services like a backend (Spring Boot app) and a 
+      database (like MySQL) that need to communicate with each other. Docker networks enable secure 
+      and isolated communication between such containers.
+    
+    * Can't we just expose ports and use localhost ?
+
+        You could run both containers independently and expose ports on the host (e.g., 8080 for Spring 
+        Boot, 3306 for MySQL). Then from the Spring Boot container, you might try to connect to the host 
+        machine’s IP or localhost to access MySQL.
+
+        However:
+        This approach is not reliable across all systems and environments.
+        It tightly couples containers to host-specific behavior.
+        It bypasses Docker’s built-in DNS and secure networking.
+
+8. Types of Networks -
+
+    * Bridge Network (default):
+
+        Created automatically by Docker.
+        Suitable for containers on the same host that need to talk.
+        You can use container names as hostnames to connect.
+
+    * Host Network:
+
+        The container shares the host’s networking namespace.
+        Useful for performance-critical apps, but no network isolation.
+
+    * None Network:
+
+        Disables networking completely. Good for security or testing apps in isolation.
+
+    * User-defined Bridge Network:
+
+        This is what we usually create explicitly.
+        More control and allows name-based service discovery (e.g., your app can connect to mysql
+        as hostname).
+
+    * Example -
+
+        # Create a new user-defined bridge network
+        docker network create my-network
+
+        # Run containers in that network
+        docker run -d --name mysqlC --network my-network mysql
+
+        docker run -d --name springboot-app --network my-network springboot-image
+
+        # Now springboot-app can connect to MySQL using hostname 'mysqlC'
+
+9. Docker Compose -
+
+    * It is used to run Multi-Container applications.
+
+    * This is like writing a script to launch your entire project setup i.e Db , backend, frontend -
+      all in one place.
+    
+    * Sample docker-compose.yml:
+
+        version: '3.8'
+        services:
+        mysql:
+            image: mysql
+            container_name: mysqlC
+            environment:
+            - MYSQL_ROOT_PASSWORD=pass123
+            ports:
+            - "3307:3306"
+            volumes:
+            - mysql-data:/var/lib/mysql
+
+        app:
+            build: .
+            container_name: springboot-app
+            ports:
+            - "8080:8080"
+            depends_on:
+            - mysql
+
+        volumes:
+        mysql-data:
+    
+    * Commands -
+
+        docker-compose up                         # Start all services
+        docker-compose up -d                      # Run in background
+        docker-compose down                       # Stop and remove containers
+
+10. File Copying & Interaction -
+
+    # Copy from host to container:
+    docker cp <source_path> <container_id>:<destination_path>
+    example - docker cp ./test.txt appC:/tmp
+
+    # Copy from container to host:
+    docker cp <container_id>:<source_path> <destination_path>
+    example - docker cp appC:/var/log/app.log ./
+
+    # Open shell in running container:
+    docker exec -it <container_id> /bin/bash
+    example - docker exec -it appC /bin/bash
+
+11. Dockerfile Instructions Explained (ENTRYPOINT, CMD, EXPOSE, ARG) -
+
+    * EXPOSE - 
+
+        It just tells docker that the application inside container is running at the mentioned port
+         
+        To map port with host we have to use -p host_port:docker_port
+    
+    * RUN -
+
+        It is used to run any command inside docker container
+        for example to install packages 
+        RUN npm install
+        RUN npm run Build
+
+    * ENTRYPOINT -
+
+        The main command that always run when the container starts
+        example - 
+            ENTRYPOINT ["java" , "-jar" , "jarName.jar"]
+
+12. 
+
+Redis - 
+
+    docker run -d --network my_network_spring --name redisC -p 6379:6379 redis
+
+MYSQL -
+
+    docker run -d --network my_network_spring --name mysqlC -p 3307:3306 -e MYSQL_ROOT_PASSWORD=pass123 mysql
+
+Springboot -
+
+    docker build -t --no-cache springboot_app:beg01 .
+    docker run -d --name springC -p 8080:8000 --network my_network_spring springboot_app:beg01
+
+    #Server
+    server.port=8000
+    #Database
+    spring.datasource.url=jdbc:mysql://mysqlC:3306/mydb
+    spring.datasource.username=ravi
+    spring.datasource.password=ravi123
+    spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
+    spring.jpa.show-sql=true
+    spring.jpa.hibernate.ddl-auto=update
+    logging.level.com.ravi.IMAGE_PROCESSING_SERVICE=DEBUG
+    logging.file.name=logs/Image_app.log
+    logging.logback.rollingpolicy.file-name-pattern=logs/Image_app-%d{yyyy-MM-dd}.%i.log
+    logging.logback.rollingpolicy.max-file-size=10MB
+    logging.logback.rollingpolicy.max-history=30
+    #logging.pattern.console=%d{HH:mm:ss.SSS} %-5level %logger{36} - %msg%n
+    #logging.pattern.file=%d{HH:mm:ss.SSS} %-5level %logger{36} - %msg%n
+    #REDIS
+    spring.data.redis.host=redisC
+    spring.data.redis.port=6379
