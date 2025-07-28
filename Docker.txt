@@ -259,37 +259,51 @@
         example - 
             ENTRYPOINT ["java" , "-jar" , "jarName.jar"]
 
-12. 
+12. Examples of Dockerizing an Application -
 
-Redis - 
 
-    docker run -d --network my_network_spring --name redisC -p 6379:6379 redis
+    1. Springboot + MySQL + Redis Application -
 
-MYSQL -
+        Network -
 
-    docker run -d --network my_network_spring --name mysqlC -p 3307:3306 -e MYSQL_ROOT_PASSWORD=pass123 mysql
+            docker network create my_network_spring
 
-Springboot -
+        Redis - 
 
-    docker build -t --no-cache springboot_app:beg01 .
-    docker run -d --name springC -p 8080:8000 --network my_network_spring springboot_app:beg01
+            docker run -d --network my_network_spring --name redisC -p 6379:6379 redis
 
-    #Server
-    server.port=8000
-    #Database
-    spring.datasource.url=jdbc:mysql://mysqlC:3306/mydb
-    spring.datasource.username=ravi
-    spring.datasource.password=ravi123
-    spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
-    spring.jpa.show-sql=true
-    spring.jpa.hibernate.ddl-auto=update
-    logging.level.com.ravi.IMAGE_PROCESSING_SERVICE=DEBUG
-    logging.file.name=logs/Image_app.log
-    logging.logback.rollingpolicy.file-name-pattern=logs/Image_app-%d{yyyy-MM-dd}.%i.log
-    logging.logback.rollingpolicy.max-file-size=10MB
-    logging.logback.rollingpolicy.max-history=30
-    #logging.pattern.console=%d{HH:mm:ss.SSS} %-5level %logger{36} - %msg%n
-    #logging.pattern.file=%d{HH:mm:ss.SSS} %-5level %logger{36} - %msg%n
-    #REDIS
-    spring.data.redis.host=redisC
-    spring.data.redis.port=6379
+        MYSQL -
+
+            docker run -d --network my_network_spring --name mysqlC -p 3307:3306 -e MYSQL_ROOT_PASSWORD=pass123 mysql
+
+        Springboot -
+
+        docker build -t --no-cache springboot_app:beg01 .
+        docker run -d --name springC -p 8080:8000 --network my_network_spring springboot_app:beg01
+
+        # Server Port (Inside container)
+        server.port=8000
+
+        # ===================== MySQL =====================
+        spring.datasource.url=jdbc:mysql://mysqlC:3306/mydb // Here mysqlC is the Container name on the same Network
+        spring.datasource.username=ravi
+        spring.datasource.password=ravi123
+        spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
+        spring.jpa.show-sql=true
+        spring.jpa.hibernate.ddl-auto=update
+
+        # ===================== Logging =====================
+        logging.level.com.ravi.IMAGE_PROCESSING_SERVICE=DEBUG
+        logging.file.name=logs/Image_app.log
+        logging.logback.rollingpolicy.file-name-pattern=logs/Image_app-%d{yyyy-MM-dd}.%i.log
+        logging.logback.rollingpolicy.max-file-size=10MB
+        logging.logback.rollingpolicy.max-history=30
+        # Optional patterns
+        # logging.pattern.console=%d{HH:mm:ss.SSS} %-5level %logger{36} - %msg%n
+        # logging.pattern.file=%d{HH:mm:ss.SSS} %-5level %logger{36} - %msg%n
+
+        # ===================== Redis =====================
+        spring.data.redis.host=redisC // Here redisC is the Container name on the same Network
+        spring.data.redis.port=6379
+    
+    2. React Application + Nginx -
