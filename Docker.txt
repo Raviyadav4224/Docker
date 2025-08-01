@@ -190,6 +190,8 @@
 
     * It is used to run Multi-Container applications.
 
+    * In docker-compose services on same network commincate using the SERVICE_NAME
+
     * This is like writing a script to launch your entire project setup i.e Db , backend, frontend -
       all in one place.
     
@@ -223,6 +225,7 @@
         docker-compose up                         # Start all services
         docker-compose up -d                      # Run in background
         docker-compose down                       # Stop and remove containers
+        docker-compose stop                       # Stop containers
 
 10. File Copying & Interaction -
 
