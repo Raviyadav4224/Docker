@@ -153,26 +153,34 @@
 
 8. Types of Networks -
 
-    * Bridge Network (default):
+    * Bridge Network (Default) -
 
         Created automatically by Docker.
-        Suitable for containers on the same host that need to talk.
-        You can use container names as hostnames to connect.
+        Suitable for containers running on the same host.
+        Service name resolution (DNS) is not available.
+        You must use IP addresses to communicate between containers.
+        Not ideal for multi-container applications.
 
-    * Host Network:
+    * Host Network -
 
-        The container shares the host’s networking namespace.
-        Useful for performance-critical apps, but no network isolation.
+        The container shares the host’s network namespace (same IP, ports).
+        No network isolation — the container behaves like a native process on the host.
+        Useful for performance-critical applications (like real-time streaming).
+        Cannot run multiple containers that expose the same port.
 
-    * None Network:
+    * None Network -
 
-        Disables networking completely. Good for security or testing apps in isolation.
+        Disables networking entirely for the container.
+        The container has no access to the host network or other containers.
+        Used for highly secure or isolated testing environments.
+        Useful when the app does not require any networking.
 
-    * User-defined Bridge Network:
+    * User-Defined Bridge Network -
 
-        This is what we usually create explicitly.
-        More control and allows name-based service discovery (e.g., your app can connect to mysql
-        as hostname).
+        Created manually using docker network create or automatically by Docker Compose.
+        Provides container-to-container DNS-based communication (e.g., mysql:3306).
+        Containers can communicate using service or container names.
+        Offers better isolation, control, and scalability for multi-service apps.
 
     * Example -
 
