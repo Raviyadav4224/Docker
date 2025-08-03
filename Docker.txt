@@ -38,7 +38,6 @@
     sudo systemctl enable docker && sudo systemctl start docker && \
     sudo usermod -aG docker $USER
 
-
 4. Docker Images -
 
     * Image is like a Class in Java - it is the Blueprint.
