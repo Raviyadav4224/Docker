@@ -1,0 +1,9 @@
+FROM node:alpine
+
+WORKDIR /react_app
+
+COPY package*.json .
+
+RUN npm install && echo "Dependecies Installed"
+
+CMD [ "npm","run","dev" ]

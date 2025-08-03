@@ -1,0 +1,20 @@
+FROM node:alpine AS build
+
+WORKDIR /react_app_prod
+
+COPY package*.json .
+
+RUN npm install
+
+COPY . .
+
+RUN npm run build
+
+
+FROM nginx:alpine
+
+COPY --from=build /react_app_prod/app_build /usr/share/nginx/html/app
+
+EXPOSE 80
+
+CMD ["nginx", "-g", "daemon off;"]

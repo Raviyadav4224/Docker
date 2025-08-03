@@ -1,0 +1,15 @@
+services:
+  myapp:
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+    container_name: react_routing_app_prod
+    image: react_routing_app:01_prod
+    ports:
+      - "80:80"
+    # healthcheck:
+    #   test: ["CMD", "curl", "-f", "http://localhost/healthz"]
+    #   interval: 30s
+    #   timeout: 10s
+    #   retries: 3
+    #   start_period: 10s

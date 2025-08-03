@@ -1,0 +1,42 @@
+services:
+  redisC:
+    image: redis
+    container_name: redis_container
+    expose:
+      - 6379
+    networks:
+      - my_network_spring1
+
+  mysqlC:
+    image: mysql
+    container_name: mysql_container
+    ports:
+      - "3307:3306"
+    expose:
+      - 3306
+    environment:
+      - MYSQL_ROOT_PASSWORD=pass123
+    networks:
+      - my_network_spring1
+    volumes:
+      - mysql-data1:/var/lib/mysql
+
+  spring_application:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: spring_app:ninja
+    container_name: spring_container
+    networks:
+      - my_network_spring1
+    ports:
+      - "8080:8080"
+    depends_on:
+      - redisC
+      - mysqlC
+
+volumes:
+  mysql-data1:
+
+networks:
+  my_network_spring1:

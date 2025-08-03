@@ -93,7 +93,7 @@
     * When containers stops all the data associated with the container is lost, to persist data even after
       restart Volumes are used
     
-    * Volume is stored on the Host machine and remains intact event when the container is restarted 
+    * Volume is stored on the Host machine and remains intact even when the container is restarted 
       or removed
 
     * Volumes are mounted i.e attaching Volume from Host machine into the docker container file system
@@ -113,27 +113,27 @@
 
         Real Example using MySQL:
 
-        docker volume create mysql-data
+            docker volume create mysql-data
 
-        docker run -d \
-        --name mysqlC \
-        -e MYSQL_ROOT_PASSWORD=pass123 \
-        -p 3307:3306 \
-        -v mysql-data:/var/lib/mysql \
-        mysql
+            docker run -d \
+            --name mysqlC \
+            -e MYSQL_ROOT_PASSWORD=pass123 \
+            -p 3307:3306 \
+            -v mysql-data:/var/lib/mysql \
+            mysql
 
-        In this example:
+            In this example:
 
-            * mysql-data is the Docker volume.
+                * mysql-data is the Docker volume.
 
-            * /var/lib/mysql is the default data directory used by MySQL where MySQL stores its data inside 
-              the container.
+                * /var/lib/mysql is the default data directory used by MySQL where MySQL stores its data inside 
+                the container.
 
-            * -v mysql-data:/var/lib/mysql mounts the volume into the container.
+                * -v mysql-data:/var/lib/mysql mounts the volume into the container.
 
-            * Now even if you stop or delete the mysqlC container, the data will be safe in the mysql-data 
-              volume and can be reused when you start a new container.
-    
+                * Now even if you stop or delete the mysqlC container, the data will be safe in the mysql-data 
+                volume and can be reused when you start a new container.
+        
 7. Docker Networks -
 
     * In real-world scenarios, we often have multiple services like a backend (Spring Boot app) and a 
@@ -190,7 +190,7 @@
 
     * It is used to run Multi-Container applications.
 
-    * In docker-compose services on same network commincate using the SERVICE_NAME
+    * In docker-compose services on same network communicate using the SERVICE_NAME
 
     * This is like writing a script to launch your entire project setup i.e Db , backend, frontend -
       all in one place.
@@ -226,6 +226,7 @@
         docker-compose up -d                      # Run in background
         docker-compose down                       # Stop and remove containers
         docker-compose stop                       # Stop containers
+        docker-compose up -f docker-compose-dev.yml -d                       # Runs with given file name
 
 10. File Copying & Interaction -
 
@@ -251,10 +252,12 @@
     
     * RUN -
 
-        It is used to run any command inside docker container
-        for example to install packages 
-        RUN npm install
-        RUN npm run Build
+        * Executes once during the image build (docker build)
+        * Used to install packages, compile code, write config files, etc
+        * It is used to run any command inside docker container
+        * for example to install packages 
+        * RUN npm install
+        * RUN npm run Build
 
     * ENTRYPOINT -
 
@@ -263,7 +266,6 @@
             ENTRYPOINT ["java" , "-jar" , "jarName.jar"]
 
 12. Examples of Dockerizing an Application -
-
 
     1. Springboot + MySQL + Redis Application -
 
@@ -309,4 +311,64 @@
         spring.data.redis.host=redisC // Here redisC is the Container name on the same Network
         spring.data.redis.port=6379
     
-    2. React Application + Nginx -
+    2. React Application + Hot Reloading -
+
+        Dockerfile.dev -
+
+            FROM node:alpine
+            WORKDIR /react_app
+            COPY package*.json .
+            RUN npm install && echo "Dependecies Installed"
+            CMD [ "npm","run","dev" ]
+        
+        docker-compose-dev.yml -
+            services:
+            myapp:
+                build:
+                context: .
+                dockerfile: Dockerfile.dev
+                image: react_routing_app:01
+                ports:
+                - "3000:5173"
+                environment:
+                - CHOKIDAR_USEPOLLING=true
+                volumes:
+                - .:/react_app
+                - /react_app/node_modules
+
+        * For vite mention in package.json "dev":"vite --host"
+
+    3. React Application + Nginx -
+
+        Dockerfile -
+
+            FROM node:alpine AS build
+            WORKDIR /react_app_prod
+            COPY package*.json .
+            RUN npm install
+            COPY . .
+            RUN npm run build
+
+            FROM nginx:alpine
+            COPY --from=build /react_app_prod/app_build /usr/share/nginx/html/app
+            EXPOSE 80
+            CMD ["nginx", "-g", "daemon off;"]
+
+        docker-compose-prod.yml -
+
+            services:
+            myapp:
+                build:
+                context: .
+                dockerfile: Dockerfile.prod
+                container_name: react_routing_app_prod
+                image: react_routing_app:01_prod
+                ports:
+                - "80:80"
+
+        * 
+            | Term      | Meaning                                                                      |
+            | --------- | ---------------------------------------------------------------------------- |
+            | Daemon    | A background process/service that runs silently                              |
+            | In Docker | Daemons can cause the container to exit if they don't stay in the foreground |
+            | Solution  | Use `daemon off` or run processes in foreground                              |
