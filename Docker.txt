@@ -267,9 +267,17 @@
         * RUN npm install
         * RUN npm run Build
 
+    * CMD -
+
+        CMD [ "npm","run","dev" ]
+        * Runs everytime During container run time
+        * It can be overwritten
+
     * ENTRYPOINT -
 
         The main command that always run when the container starts
+        Sets fixed command at container run
+        It cannot be overwritten
         example - 
             ENTRYPOINT ["java" , "-jar" , "jarName.jar"]
 
