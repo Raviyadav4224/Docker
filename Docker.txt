@@ -231,6 +231,9 @@
         docker-compose down                       # Stop and remove containers
         docker-compose stop                       # Stop containers
         docker-compose up -f docker-compose-dev.yml -d                       # Runs with given file name
+    
+    * docker-compose -f file_path --env-file env_file_path up -d  -
+      Runs the container with specific env file and docker compose file
 
 10. File Copying & Interaction -
 
