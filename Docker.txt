@@ -81,6 +81,9 @@
         docker start <container_id>               # Start stopped container
         docker restart <container_id>             # Restart container
         docker rm <container_id>                  # Remove container
+        docker run --name <container_name> <image> # Runs container with given name
+        docker run --name <container_name> --env-file env_file_path <image> # Runs container with given
+        name and give env file
 
 6. Docker Volumes -
 
