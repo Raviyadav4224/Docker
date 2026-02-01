@@ -390,3 +390,13 @@
             | Daemon    | A background process/service that runs silently                              |
             | In Docker | Daemons can cause the container to exit if they don't stay in the foreground |
             | Solution  | Use `daemon off` or run processes in foreground                              |
+
+13. Docker Push to DockerHub -  
+
+    docker tag oldTag newTag
+    docker push image
+
+    example -
+
+        docker image created named - pixxy-user-service:1.0.0
+        docker tag pixxy-user-service:1.0.0 ravikumar4224:pixxy-user-service:1.0.0
